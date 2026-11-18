@@ -38,7 +38,16 @@ def list_repo_files(repo):
     with urllib.request.urlopen(request, timeout=60) as response:
         return [item["rfilename"] for item in json.load(response)["siblings"]]
 
+def find_local_names(repo, suffix, prefix):
+    folder = MODELS_DIR / repo.replace("/", "--")
+    if not folder.is_dir():
+        return []
+    return [path.name for path in folder.iterdir() if path.is_file() and path.name.startswith(prefix) and path.name.endswith(suffix)]
+
 def resolve_name(repo, suffix, prefix=""):
+    local = find_local_names(repo, suffix, prefix)
+    if len(local) == 1:
+        return local[0]
     names = list_repo_files(repo)
     matches = [name for name in names if Path(name).name.startswith(prefix) and name.endswith(suffix)]
     if len(matches) != 1:
