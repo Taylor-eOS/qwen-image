@@ -41,6 +41,12 @@ def choose_image():
         sys.exit(f"Image not found: {path}")
     return path
 
+def choose_prompts():
+    answer = input("Edit prompt (use prompt file): ").strip()
+    if answer:
+        return [answer]
+    return batch.load_prompts()
+
 def run_edit(prompt, image_path, width, height):
     seed = utils.choose_seed()
     output = utils.make_output(image_path.stem, seed)
@@ -54,9 +60,9 @@ def run_edit(prompt, image_path, width, height):
     return utils.run_sd(utils.build_command(extra, prompt), output)
 
 def main():
-    prompts = batch.load_prompts()
     image_path = choose_image()
     width, height = target_size(image_path)
+    prompts = choose_prompts()
     utils.ensure_sd_cli()
     utils.fetch_models(vision=True)
     batch.run_all(prompts, lambda prompt: run_edit(prompt, image_path, width, height))
