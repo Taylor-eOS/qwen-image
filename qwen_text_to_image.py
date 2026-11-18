@@ -1,38 +1,29 @@
-import sys
+import batch
 import utils
 
-WIDTH = int(input("Enter WIDTH: ")) or 1024
-HEIGHT = int(input("Enter HEIGHT: ")) or 1024
-PROMPT = ""
-SEED = 0
-OUTPUT = None
+default_res = 640
+width_input = input(f"Enter width ({default_res}): ").strip()
+WIDTH = int(width_input) if width_input else default_res
+height_input = input(f"Enter height ({WIDTH}): ").strip()
+HEIGHT = int(height_input) if height_input else WIDTH
 
-def read_inputs():
-    global PROMPT, SEED, OUTPUT
-    utils.check_size(WIDTH, HEIGHT)
-    PROMPT = input("Image description: ").strip()
-    if not PROMPT:
-        sys.exit("The description is empty")
-    SEED = utils.choose_seed()
-    OUTPUT = utils.make_output("text_to_image", SEED)
-
-def build_command():
+def run_generation(prompt):
+    seed = utils.choose_seed()
+    output = utils.make_output("text_to_image", seed)
     extra = [
         "-W", str(WIDTH),
         "-H", str(HEIGHT),
-        "--seed", str(SEED),
-        "-o", str(OUTPUT),
+        "--seed", str(seed),
+        "-o", str(output),
     ]
-    return utils.build_command(extra, PROMPT)
-
-def run_generation():
-    utils.run_sd(build_command(), OUTPUT)
+    return utils.run_sd(utils.build_command(extra, prompt), output)
 
 def main():
-    read_inputs()
+    utils.check_size(WIDTH, HEIGHT)
+    prompts = batch.load_prompts()
     utils.ensure_sd_cli()
     utils.fetch_models(vision=False)
-    run_generation()
+    batch.run_all(prompts, run_generation)
 
 if __name__ == "__main__":
     main()

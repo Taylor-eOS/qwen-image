@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+import batch
 import utils
 try:
     from PIL import Image
@@ -8,21 +9,15 @@ except ImportError:
 
 IMAGE_DIR = Path(__file__).resolve().parent
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp"}
-INPUT_IMAGE = None
-PROMPT = ""
-WIDTH = 0
-HEIGHT = 0
-SEED = 0
-OUTPUT = None
 
-def target_size():
-    with Image.open(INPUT_IMAGE) as image:
+def target_size(image_path):
+    with Image.open(image_path) as image:
         width, height = image.size
     utils.check_size(width, height)
     return width, height
 
 def find_images():
-    found = [path for path in IMAGE_DIR.iterdir() if path.is_file() and path.suffix.lower() in IMAGE_EXTENSIONS]
+    found = [path for path in IMAGE_DIR.iterdir() if path.is_file() and path.suffix.lower() in IMAGE_EXTENSIONS and "_seed" not in path.stem]
     return sorted(found, key=lambda path: path.name.lower())
 
 def choose_image():
@@ -30,7 +25,7 @@ def choose_image():
     if images:
         for number, path in enumerate(images, 1):
             print(f"{number}. {path.name}")
-        answer = input("Image number or path [1]: ")
+        answer = input("Image number or path (1): ")
     else:
         answer = input("No images found in the script folder. Path to the image: ")
     answer = answer.strip().strip("'\"")
@@ -41,38 +36,30 @@ def choose_image():
         if not 1 <= index <= len(images):
             sys.exit(f"Invalid number: {index}")
         return images[index - 1]
-    return Path(answer).expanduser()
+    path = Path(answer).expanduser()
+    if not path.is_file():
+        sys.exit(f"Image not found: {path}")
+    return path
 
-def read_inputs():
-    global INPUT_IMAGE, PROMPT, WIDTH, HEIGHT, SEED, OUTPUT
-    INPUT_IMAGE = choose_image()
-    if not INPUT_IMAGE.is_file():
-        sys.exit(f"Image not found: {INPUT_IMAGE}")
-    PROMPT = input("Edit instruction: ").strip()
-    if not PROMPT:
-        sys.exit("The instruction is empty")
-    WIDTH, HEIGHT = target_size()
-    SEED = utils.choose_seed()
-    OUTPUT = utils.make_output(f"{INPUT_IMAGE.stem}_edit", SEED)
-
-def build_command():
+def run_edit(prompt, image_path, width, height):
+    seed = utils.choose_seed()
+    output = utils.make_output(f"{image_path.stem}_edit", seed)
     extra = [
-        "-r", str(INPUT_IMAGE),
-        "-W", str(WIDTH),
-        "-H", str(HEIGHT),
-        "--seed", str(SEED),
-        "-o", str(OUTPUT),
+        "-r", str(image_path),
+        "-W", str(width),
+        "-H", str(height),
+        "--seed", str(seed),
+        "-o", str(output),
     ]
-    return utils.build_command(extra, PROMPT)
-
-def run_edit():
-    utils.run_sd(build_command(), OUTPUT)
+    return utils.run_sd(utils.build_command(extra, prompt), output)
 
 def main():
-    read_inputs()
+    prompts = batch.load_prompts()
+    image_path = choose_image()
+    width, height = target_size(image_path)
     utils.ensure_sd_cli()
     utils.fetch_models(vision=True)
-    run_edit()
+    batch.run_all(prompts, lambda prompt: run_edit(prompt, image_path, width, height))
 
 if __name__ == "__main__":
     main()

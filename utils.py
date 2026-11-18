@@ -128,5 +128,7 @@ def run_sd(command, output):
     started = time.time()
     result = subprocess.run(command)
     if result.returncode != 0:
-        sys.exit(f"sd-cli failed with exit code {result.returncode}. Code -9 means the system ran out of memory")
+        print(f"sd-cli failed with exit code {result.returncode}. Code -9 means the system ran out of memory")
+        return False
     print(f"Saved {output} in {(time.time() - started) / 60:.1f} minutes")
+    return True
