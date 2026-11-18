@@ -6,7 +6,8 @@ try:
 except ImportError:
     sys.exit("Pillow is missing. Run: sudo apt install python3-pil")
 
-DEFAULT_IMAGE = Path(__file__).resolve().parent / "image.jpg"
+IMAGE_DIR = Path(__file__).resolve().parent
+IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp"}
 INPUT_IMAGE = None
 PROMPT = ""
 WIDTH = 0
@@ -20,10 +21,31 @@ def target_size():
     utils.check_size(width, height)
     return width, height
 
+def find_images():
+    found = [path for path in IMAGE_DIR.iterdir() if path.is_file() and path.suffix.lower() in IMAGE_EXTENSIONS]
+    return sorted(found, key=lambda path: path.name.lower())
+
+def choose_image():
+    images = find_images()
+    if images:
+        for number, path in enumerate(images, 1):
+            print(f"{number}. {path.name}")
+        answer = input("Image number or path [1]: ")
+    else:
+        answer = input("No images found in the script folder. Path to the image: ")
+    answer = answer.strip().strip("'\"")
+    if images and not answer:
+        return images[0]
+    if answer.isdigit():
+        index = int(answer)
+        if not 1 <= index <= len(images):
+            sys.exit(f"Invalid number: {index}")
+        return images[index - 1]
+    return Path(answer).expanduser()
+
 def read_inputs():
     global INPUT_IMAGE, PROMPT, WIDTH, HEIGHT, SEED, OUTPUT
-    answer = input(f"Path to the image to edit [{DEFAULT_IMAGE}]: ").strip().strip("'\"")
-    INPUT_IMAGE = Path(answer or DEFAULT_IMAGE).expanduser()
+    INPUT_IMAGE = choose_image()
     if not INPUT_IMAGE.is_file():
         sys.exit(f"Image not found: {INPUT_IMAGE}")
     PROMPT = input("Edit instruction: ").strip()
