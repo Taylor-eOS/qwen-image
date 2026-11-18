@@ -1,8 +1,8 @@
 import sys
 import utils
 
-WIDTH = 1024
-HEIGHT = 1024
+WIDTH = int(input("Enter WIDTH: ")) or 1024
+HEIGHT = int(input("Enter HEIGHT: ")) or 1024
 PROMPT = ""
 SEED = 0
 OUTPUT = None
