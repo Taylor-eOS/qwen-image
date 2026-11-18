@@ -43,7 +43,7 @@ def choose_image():
 
 def run_edit(prompt, image_path, width, height):
     seed = utils.choose_seed()
-    output = utils.make_output(f"{image_path.stem}_edit", seed)
+    output = utils.make_output(image_path.stem, seed)
     extra = [
         "-r", str(image_path),
         "-W", str(width),

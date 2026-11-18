@@ -9,7 +9,7 @@ HEIGHT = int(height_input) if height_input else WIDTH
 
 def run_generation(prompt):
     seed = utils.choose_seed()
-    output = utils.make_output("text_to_image", seed)
+    output = utils.make_output("qwen", seed)
     extra = [
         "-W", str(WIDTH),
         "-H", str(HEIGHT),

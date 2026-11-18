@@ -103,7 +103,7 @@ def choose_seed():
 
 def make_output(stem, seed):
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    return OUT_DIR / f"{stem}_{time.strftime('%Y%m%d_%H%M%S')}_seed{seed}.png"
+    return OUT_DIR / f"{stem}_{seed}.png"
 
 def build_command(extra, prompt):
     command = [
