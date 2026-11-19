@@ -1,7 +1,7 @@
 import batch
 import utils
 
-default_res = 640
+default_res = 768
 width_input = input(f"Enter width ({default_res}): ").strip()
 WIDTH = int(width_input) if width_input else default_res
 height_input = input(f"Enter height ({WIDTH}): ").strip()
@@ -20,7 +20,7 @@ def run_generation(prompt):
 
 def main():
     utils.check_size(WIDTH, HEIGHT)
-    prompts = batch.load_prompts()
+    prompts = batch.choose_prompts("Prompt")
     utils.ensure_sd_cli()
     utils.fetch_models(vision=False)
     batch.run_all(prompts, run_generation)

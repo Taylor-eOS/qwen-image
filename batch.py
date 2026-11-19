@@ -19,6 +19,12 @@ def load_prompts():
         sys.exit(f"No prompts found in {INPUT_FILE}")
     return prompts
 
+def choose_prompts(label):
+    answer = input(f"{label} (use prompt file): ").strip()
+    if answer:
+        return [answer]
+    return load_prompts()
+
 def run_all(prompts, job):
     failed = []
     for number, prompt in enumerate(prompts, 1):
