@@ -9,7 +9,7 @@ import http.client
 import urllib.error
 import urllib.request
 from pathlib import Path
-from settings import SD_CPP_URL, HF_URL, DENOISER_REPO, DENOISER_SUFFIX, ENCODER_REPO, ENCODER_SUFFIX, MMPROJ_PREFIX, MMPROJ_SUFFIX, VAE_REPO, VAE_FILE, LORA_REPO, LORA_FILE, SRC_DIR, BUILD_DIR, MODELS_DIR, OUT_DIR, HEADERS, ALIGN, MAX_PIXELS, SEED, USE_UNCENSORED_LORA
+from settings import SD_CPP_URL, HF_URL, DENOISER_REPO, DENOISER_SUFFIX, ENCODER_REPO, ENCODER_SUFFIX, MMPROJ_PREFIX, MMPROJ_SUFFIX, VAE_REPO, VAE_FILE, LORA_REPO, LORA_FILE, SRC_DIR, BUILD_DIR, MODELS_DIR, OUT_DIR, HEADERS, ALIGN, MAX_PIXELS, SEED, USE_UNCENSORED_LORA, VAE_TILING, VAE_TILE_SIZE
 
 FILES = {}
 SD_CLI = None
@@ -126,6 +126,8 @@ def build_command(extra, prompt):
         "--sampling-method", "euler",
         "-v",
     ]
+    if VAE_TILING:
+        command += ["--vae-tiling", "--vae-tile-size", VAE_TILE_SIZE]
     if "mmproj" in FILES:
         command += ["--llm_vision", FILES["mmproj"]]
     if "lora" in FILES:
